@@ -9,32 +9,34 @@ import (
   daos "./dao"
   "gopkg.in/mgo.v2/bson"
   "encoding/json"
-  "strconv"
 )
 
 var dao = daos.TopicsDAO{}
 
 
 func AllTopicsEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "not implemented yet !")
+  fmt.Printf("MONGO connection")
+  topics, err := dao.FindAll()
+	if err != nil {
+      fmt.Printf("MONGO error")
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithJson(w, http.StatusOK, topics)
 }
 
 func CreateTopicsEndPoint(w http.ResponseWriter, r *http.Request) {
   defer r.Body.Close()
-	var topicInput models.TopicInput
   var topic models.Topic
-	if err := json.NewDecoder(r.Body).Decode(&topicInput); err != nil {
-    fmt.Printf("%s",err.Error())
+  fmt.Printf("%s \n",r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&topic); err != nil {
+    fmt.Printf("%s could not decode",err.Error())
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	topic.ID = bson.NewObjectId()
-  topic.Name = topicInput.Name
-  topic.Description = topicInput.Description
-  var yearEstablished, _ = strconv.ParseInt(topicInput.YearEstablished, 10, 32)
-  topic.YearEstablished = int32(yearEstablished)
 	if err := dao.Insert(topic); err != nil {
-    fmt.Printf("%s",err.Error())
+    fmt.Printf("%s could not insert",err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
