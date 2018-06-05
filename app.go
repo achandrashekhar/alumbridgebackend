@@ -9,7 +9,7 @@ import (
   daos "./dao"
   "gopkg.in/mgo.v2/bson"
   "encoding/json"
-    "strconv"
+  "strconv"
 )
 
 var dao = daos.TopicsDAO{}
@@ -20,20 +20,21 @@ func AllTopicsEndPoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateTopicsEndPoint(w http.ResponseWriter, r *http.Request) {
-
-  r.ParseForm()
-  fmt.Printf("Name is %s \n", r.Form.Get("Name"))
   defer r.Body.Close()
-	var topic models.Topic
-	if err := json.NewDecoder(r.Body).Decode(&topic); err != nil {
+	var topicInput models.TopicInput
+  var topic models.Topic
+	if err := json.NewDecoder(r.Body).Decode(&topicInput); err != nil {
+    fmt.Printf("%s",err.Error())
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	topic.ID = bson.NewObjectId()
-
-  var yearEstablished, _ = strconv.ParseInt(r.Form.Get("year"), 10, 32)
+  topic.Name = topicInput.Name
+  topic.Description = topicInput.Description
+  var yearEstablished, _ = strconv.ParseInt(topicInput.YearEstablished, 10, 32)
   topic.YearEstablished = int32(yearEstablished)
 	if err := dao.Insert(topic); err != nil {
+    fmt.Printf("%s",err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
