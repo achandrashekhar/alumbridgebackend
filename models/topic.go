@@ -9,3 +9,7 @@ type Topic struct {
 	YearEstablished  int32        `bson:"yearEstablished" json:"yearEstablished"`
 	Description string        `bson:"description" json:"description"`
 }
+
+type TokenBlob struct {
+AccessToken string 
+}
